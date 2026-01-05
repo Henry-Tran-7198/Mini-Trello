@@ -1,13 +1,11 @@
-import HomeIcon from '@mui/icons-material/Home';
+import Board from '../src/pages/Boards/_id';
+
+
 
 function App() {
   return (
     <>
-      <div>Hello World</div>
-      <HomeIcon fontSize="small" />
-      <HomeIcon />
-      <HomeIcon fontSize="large" />
-      <HomeIcon sx={{ fontSize: 40 }} />
+      <Board />
     </>
   )
 }
