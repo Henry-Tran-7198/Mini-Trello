@@ -4,44 +4,24 @@ import { authService } from '../../api/authService';
 import { AuthContext } from '../../contexts/AuthContext';
 
 export default function AvatarUpload() {
-    const { user, setUser } = useContext(AuthContext);
-    const [avatarFile, setAvatarFile] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
+    const { setUser } = useContext(AuthContext);
+    const [file, setFile] = useState(null);
 
-    const handleFileChange = e => setAvatarFile(e.target.files[0]);
-
-    const handleUpload = async e => {
+    const submit = async e => {
         e.preventDefault();
-        if (!avatarFile) return;
-
-        setLoading(true);
-        setMessage('');
+        if (!file) return;
 
         const formData = new FormData();
-        formData.append('avatar', avatarFile);
+        formData.append('avatar', file);
 
-        try {
-            const res = await authService.uploadAvatar(formData);
-            setUser({ ...user, avatar: res.data.avatar_url });
-            setMessage(res.data.message);
-            setAvatarFile(null);
-        } catch (err) {
-            setMessage(err.response?.data?.message || 'Upload failed');
-        } finally {
-            setLoading(false);
-        }
+        const res = await authService.uploadAvatar(formData);
+        setUser(prev => ({ ...prev, avatar: res.data.avatar_url }));
     };
 
     return (
-        <form onSubmit={handleUpload}>
-            <h3>Update Avatar</h3>
-            {message && <p>{message}</p>}
-            <input type="file" accept="image/*" onChange={handleFileChange} />
-            <button type="submit" disabled={loading}>
-                {loading ? 'Uploading...' : 'Upload'}
-            </button>
-            {user?.avatar && <img src={user.avatar} alt="Avatar" width={100} />}
+        <form onSubmit={submit}>
+            <input type="file" onChange={e => setFile(e.target.files[0])} />
+            <button type="submit">Update avatar</button>
         </form>
     );
 }
