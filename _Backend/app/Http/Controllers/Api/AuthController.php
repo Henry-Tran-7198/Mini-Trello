@@ -71,7 +71,7 @@ class AuthController extends Controller
                 'id'       => $user->id,
                 'email'    => $user->email,
                 'username' => $user->username,
-                'avatar'   => asset('storage/'.$user->avatar)
+                'avatar'   => '/storage/' . $user->avatar
             ]
         ]);
     }
@@ -89,9 +89,24 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * UPLOAD AVATAR (login required)
-     */
+    // GET CURRENT USER
+    public function me(Request $request)
+    {
+        $user = $request->attributes->get('auth_user');
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        return response()->json([
+            'id'       => $user->id,
+            'email'    => $user->email,
+            'username' => $user->username,
+            'avatar'   => '/storage/' . $user->avatar
+        ]);
+    }
+
+    // UPLOAD AVATAR (login required)
     public function uploadAvatar(Request $request)
     {
         $request->validate([
@@ -103,7 +118,7 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-        
+
         // xoá avatar cũ (trừ default)
         if ($user->avatar && $user->avatar !== 'avatars/default.png') {
             Storage::disk('public')->delete($user->avatar);

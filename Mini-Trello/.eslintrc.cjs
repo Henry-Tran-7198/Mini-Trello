@@ -11,11 +11,7 @@ module.exports = {
   plugins: ["react-refresh"],
   rules: {
     "react-refresh/only-export-components": "warn",
-    "no-restricted-imports": [
-      "error",
-      {
-        patterns: [{ regex: "^@mui/[^/]+$" }],
-      },
-    ],
+    "react/prop-types": "off",
+    "no-unused-vars": "warn"
   },
 };

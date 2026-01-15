@@ -1,5 +1,4 @@
 import Box from '@mui/material/Box';
-import React from 'react';
 import Column from './Column/Column';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import Button from '@mui/material/Button';

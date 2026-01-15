@@ -65,7 +65,7 @@ function Column({ column }) {
             style={dndKitColumnStyle}
             {...attributes}
         >
-            < Box
+            <Box
                 {...listeners}
                 sx={{
                     minWidth: '300px',
@@ -79,7 +79,7 @@ function Column({ column }) {
                 }
             >
                 {/* Box Column Header */}
-                < Box sx={{
+                <Box sx={{
                     height: (theme) => theme.trello.columnHeaderHeight,
                     p: 2,
                     display: 'flex',
@@ -166,7 +166,7 @@ function Column({ column }) {
                 <ListCards cards={orderedCards} />
 
                 {/* Box Column Footer */}
-                < Box sx={{
+                <Box sx={{
                     height: (theme) => theme.trello.columnFooterHeight,
                     p: 2,
                     display: 'flex',

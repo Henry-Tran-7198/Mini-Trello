@@ -1,4 +1,4 @@
-import { experimental_extendTheme as extendTheme } from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
 
 const APP_BAR_HEIGHT = "58px";
 const BOARD_BAR_HEIGHT = "60px";
@@ -7,7 +7,13 @@ const COLUMN_HEADER_HEIGHT = "50px";
 const COLUMN_FOOTER_HEIGHT = "56px";
 
 // Create a theme instance.
-const theme = extendTheme({
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#1976d2"
+    },
+    mode: "light"
+  },
   trello: {
     appBarHeight: APP_BAR_HEIGHT,
     boardBarHeight: BOARD_BAR_HEIGHT,
@@ -15,7 +21,6 @@ const theme = extendTheme({
     columnHeaderHeight: COLUMN_HEADER_HEIGHT,
     columnFooterHeight: COLUMN_FOOTER_HEIGHT,
   },
-  colorSchemes: {},
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -39,7 +44,6 @@ const theme = extendTheme({
     },
     MuiButton: {
       styleOverrides: {
-        // Name of the slot
         root: {
           textTransform: "none",
           borderWidth: "0.5px",
