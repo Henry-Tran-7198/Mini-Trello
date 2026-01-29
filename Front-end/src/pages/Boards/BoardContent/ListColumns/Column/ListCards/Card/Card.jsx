@@ -55,7 +55,9 @@ function Card({ card }) {
                 minHeight: 0,
                 padding: 0,
                 opacity: card?.FE_PlaceholderCard ? 0 : 1,         // trong suốt
-                pointerEvents: card?.FE_PlaceholderCard ? 'none' : 'auto' // không cản click
+                pointerEvents: card?.FE_PlaceholderCard ? 'none' : 'auto',
+                border: '1px solid transparent',
+                '&:hover': { borderColor: (theme) => theme.palette.primary.main }
             }}>
             {card?.cover &&
                 <CardMedia

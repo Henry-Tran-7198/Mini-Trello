@@ -1,7 +1,7 @@
 // src/pages/AuthPage.jsx (hoặc nơi bạn đặt)
 import { useState } from 'react';
-import LoginForm from '../components/Auth_form/LoginForm';
-import RegisterForm from '../components/Auth_form/RegisterForm';
+import LoginForm from '../components/AuthForm/LoginForm';
+import RegisterForm from '../components/AuthForm/RegisterForm';
 import { Box, Typography, Button, Container } from '@mui/material';
 
 export default function AuthPage() {

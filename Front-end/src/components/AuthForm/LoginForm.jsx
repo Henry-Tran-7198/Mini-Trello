@@ -34,10 +34,10 @@ export default function LoginForm({ onRegisterClick }) {
         try {
             const res = await authService.login(form);
             setToken(res.data.token);
-            setUser(res.data.user);
-            // Nếu bạn muốn chuyển trang sau khi login thành công, thêm ở đây
-            // Ví dụ: navigate('/board') nếu dùng react-router
-            navigate("/board");
+            setUser(res.data.user);// set trước
+            console.log("User set to:", res.data.user); // debug
+
+            navigate("/board");// sau đó mới navigate
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again!');
         } finally {

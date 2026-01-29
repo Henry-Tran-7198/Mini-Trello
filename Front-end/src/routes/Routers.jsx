@@ -5,11 +5,26 @@ import { AuthContext } from '../Contexts/AuthContext';
 
 import AuthPage from '../pages/AuthPage';
 import Board from '../pages/Boards/_id';
+import Profile from '../components/Profile/UpdateProfile';
 
 // 1. Route bảo vệ: chỉ cho vào nếu ĐÃ login (có user)
 function ProtectedRoute({ children }) {
-    const { user } = useContext(AuthContext);
-    if (!user) return <Navigate to="/" replace />;
+    const { user, loading } = useContext(AuthContext);
+
+    // Nếu đang load user → chưa redirect gì cả (chờ load xong)
+    if (loading) {
+        return (
+            <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CircularProgress />
+            </div>
+        );
+    }
+
+    // Load xong rồi mới check
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
+
     return children;
 }
 
@@ -42,6 +57,14 @@ const router = createBrowserRouter([
         element: (
             <ProtectedRoute>
                 <Board />
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/profile",
+        element: (
+            <ProtectedRoute>
+                <Profile />
             </ProtectedRoute>
         ),
     },
