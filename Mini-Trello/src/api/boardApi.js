@@ -45,4 +45,33 @@ export const boardApi = {
   delete(boardId) {
     return axios.delete(`/boards/${boardId}`);
   },
+
+  /**
+   * Lấy danh sách members của board
+   * @param {string|number} boardId - ID của board
+   * @returns {Promise}
+   */
+  getMembers(boardId) {
+    return axios.get(`/boards/${boardId}/members`);
+  },
+
+  /**
+   * Invite member vào board
+   * @param {string|number} boardId - ID của board
+   * @param {string|number} userId - ID của user cần invite
+   * @returns {Promise}
+   */
+  inviteMember(boardId, userId) {
+    return axios.post(`/boards/${boardId}/invite`, { user_id: userId });
+  },
+
+  /**
+   * Xóa member khỏi board
+   * @param {string|number} boardId - ID của board
+   * @param {string|number} userId - ID của user cần xóa
+   * @returns {Promise}
+   */
+  removeMember(boardId, userId) {
+    return axios.delete(`/boards/${boardId}/members/${userId}`);
+  },
 };

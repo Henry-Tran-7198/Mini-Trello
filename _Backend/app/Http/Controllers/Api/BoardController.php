@@ -61,8 +61,17 @@ class BoardController extends Controller
         // ownerIds & memberIds
         $ownerIds = [];
         $memberIds = [];
+        $users = [];
 
         foreach ($board->users as $user) {
+            $users[] = [
+                'id' => (string) $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'role' => $user->pivot->role
+            ];
+
             if ($user->pivot->role === 'owner') {
                 $ownerIds[] = (string) $user->id;
             } else {
@@ -126,6 +135,7 @@ class BoardController extends Controller
                 'type' => $board->type,
                 'ownerIds' => $ownerIds,
                 'memberIds' => $memberIds,
+                'users' => $users,
                 'columnOrderIds' => $columnOrderIds,
                 'columns' => $columns
             ]
@@ -164,7 +174,7 @@ class BoardController extends Controller
         $board = Board::findOrFail($id);
 
         // Kiểm tra xem user có quyền chỉnh sửa board này không
-        $isOwner = $board->users()->where('user_id', Auth::id())->where('role', 'owner')->exists();
+        $isOwner = $board->users()->wherePivot('role', 'owner')->where('user_id', Auth::id())->exists();
         if (!$isOwner) {
             return response()->json([
                 'message' => 'Unauthorized'
@@ -202,7 +212,7 @@ class BoardController extends Controller
         $board = Board::findOrFail($id);
 
         // Kiểm tra quyền
-        $isOwner = $board->users()->where('user_id', Auth::id())->where('role', 'owner')->exists();
+        $isOwner = $board->users()->wherePivot('role', 'owner')->where('user_id', Auth::id())->exists();
         if (!$isOwner) {
             return response()->json([
                 'message' => 'Unauthorized'
@@ -214,6 +224,115 @@ class BoardController extends Controller
 
         return response()->json([
             'message' => 'Board deleted successfully'
+        ]);
+    }
+
+    /**
+     * GET BOARD MEMBERS
+     */
+    public function getMembers($id)
+    {
+        $board = Board::with('users')->findOrFail($id);
+
+        $members = [];
+        foreach ($board->users as $user) {
+            $members[] = [
+                'id' => (string) $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'role' => $user->pivot->role
+            ];
+        }
+
+        return response()->json([
+            'members' => $members
+        ]);
+    }
+
+    /**
+     * INVITE MEMBER TO BOARD
+     */
+    public function inviteMember(Request $request, $id)
+    {
+        $board = Board::findOrFail($id);
+
+        // Kiểm tra quyền
+        $isOwner = $board->users()->wherePivot('role', 'owner')->where('user_id', Auth::id())->exists();
+        if (!$isOwner) {
+            return response()->json([
+                'message' => 'Unauthorized - Only owner can invite members'
+            ], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        $userId = $request->user_id;
+
+        // Kiểm tra user đã là member chưa
+        $alreadyMember = $board->users()->where('user_id', $userId)->exists();
+        if ($alreadyMember) {
+            return response()->json([
+                'message' => 'User is already a member of this board'
+            ], 400);
+        }
+
+        // Add user to board
+        $board->users()->attach($userId, [
+            'role' => 'member'
+        ]);
+
+        $user = \App\Models\User::find($userId);
+
+        return response()->json([
+            'message' => 'Member invited successfully',
+            'member' => [
+                'id' => (string) $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'role' => 'member'
+            ]
+        ], 201);
+    }
+
+    /**
+     * REMOVE MEMBER FROM BOARD
+     */
+    public function removeMember($id, $userId)
+    {
+        $board = Board::findOrFail($id);
+
+        // Kiểm tra quyền
+        $isOwner = $board->users()->wherePivot('role', 'owner')->where('user_id', Auth::id())->exists();
+        if (!$isOwner) {
+            return response()->json([
+                'message' => 'Unauthorized - Only owner can remove members'
+            ], 403);
+        }
+
+        // Kiểm tra user là member không
+        $isMember = $board->users()->where('user_id', $userId)->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'User is not a member of this board'
+            ], 400);
+        }
+
+        // Không được remove owner
+        $isOwnerMember = $board->users()->wherePivot('role', 'owner')->where('user_id', $userId)->exists();
+        if ($isOwnerMember) {
+            return response()->json([
+                'message' => 'Cannot remove board owner'
+            ], 400);
+        }
+
+        $board->users()->detach($userId);
+
+        return response()->json([
+            'message' => 'Member removed successfully'
         ]);
     }
 }

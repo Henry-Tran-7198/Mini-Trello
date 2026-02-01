@@ -1,4 +1,5 @@
 import { useTheme } from "@mui/material/styles";
+import { useState } from "react";
 
 // MUI
 import Box from "@mui/material/Box";
@@ -18,6 +19,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
 // Utils
 import { capitalizeFirstLetter } from "~/utils/formatters";
+import InviteMemberDialog from "./InviteMemberDialog";
 
 const MENU_STYLES = {
   color: "white",
@@ -29,8 +31,20 @@ const MENU_STYLES = {
   "&:hover": { bgcolor: "rgba(255,255,255,0.15)" },
 };
 
-function BoardBar({ board }) {
+function BoardBar({ board, onMembersChange }) {
   const theme = useTheme();
+  const [openInviteDialog, setOpenInviteDialog] = useState(false);
+
+  const getMembers = () => {
+    // Lấy user data từ board.users array
+    return board?.users || [];
+  };
+
+  const handleMemberAdded = () => {
+    if (onMembersChange) {
+      onMembersChange();
+    }
+  };
 
   return (
     <Box
@@ -89,10 +103,11 @@ function BoardBar({ board }) {
         <Button
           variant="outlined"
           startIcon={<PersonAddIcon />}
+          onClick={() => setOpenInviteDialog(true)}
           sx={{
             color: "white",
             borderColor: "white",
-            "&:hover": { borderColor: "white" },
+            "&:hover": { borderColor: "white", bgcolor: "rgba(255,255,255,0.1)" },
           }}
         >
           Invite
@@ -111,13 +126,25 @@ function BoardBar({ board }) {
             },
           }}
         >
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Tooltip key={i} title="Member">
-              <Avatar />
+          {getMembers().map((member) => (
+            <Tooltip key={member.id} title={`${member.username} (${member.role})`}>
+              <Avatar
+                alt={member.username}
+                src={member.avatar}
+              />
             </Tooltip>
           ))}
         </AvatarGroup>
       </Box>
+
+      {/* Invite Dialog */}
+      <InviteMemberDialog
+        open={openInviteDialog}
+        onClose={() => setOpenInviteDialog(false)}
+        boardId={board?._id}
+        currentMembers={getMembers()}
+        onMemberAdded={handleMemberAdded}
+      />
     </Box>
   );
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CardController;
 use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CardMemberController;
+use App\Http\Controllers\Api\UserController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -19,12 +20,19 @@ Route::middleware('auth.token')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // USER
+    Route::get('/users/search', [UserController::class, 'search']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
+
     // BOARD
     Route::get('/boards', [BoardController::class, 'index']);
     Route::post('/boards', [BoardController::class, 'store']);
     Route::get('/boards/{id}', [BoardController::class, 'show']);
     Route::put('/boards/{id}', [BoardController::class, 'update']);
     Route::delete('/boards/{id}', [BoardController::class, 'destroy']);
+    Route::get('/boards/{id}/members', [BoardController::class, 'getMembers']);
+    Route::post('/boards/{id}/invite', [BoardController::class, 'inviteMember']);
+    Route::delete('/boards/{id}/members/{userId}', [BoardController::class, 'removeMember']);
 
     // COLUMN
     Route::post('/columns', [ColumnController::class, 'store']);
