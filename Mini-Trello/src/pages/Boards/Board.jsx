@@ -3,10 +3,10 @@
  * Board Page (Main)
  */
 
-import Container from '@mui/material/Container'
-import AppBar from '~/components/AppBar/AppBar'
-import BoardBar from './BoardBar/BoardBar'
-import BoardContent from './BoardContent/BoardContent'
+import Container from "@mui/material/Container";
+import AppBar from "~/components/AppBar/AppBar";
+import BoardBar from "./BoardBar/BoardBar";
+import BoardContent from "./BoardContent/BoardContent";
 
 export default function Board({ board }) {
   return (
@@ -14,8 +14,8 @@ export default function Board({ board }) {
       disableGutters
       maxWidth={false}
       sx={{
-        height: '100vh',
-        overflow: 'hidden'
+        height: "100vh",
+        overflow: "hidden",
       }}
     >
       {/* App Bar */}
@@ -27,5 +27,5 @@ export default function Board({ board }) {
       {/* Board Content */}
       <BoardContent board={board} />
     </Container>
-  )
+  );
 }

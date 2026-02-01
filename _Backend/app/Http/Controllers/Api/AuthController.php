@@ -58,12 +58,9 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account inactive'], 403);
         }
 
-        $token = hash('sha256', Str::random(60));
-
-        UserToken::create([
-            'user_id' => $user->id,
-            'token'   => $token
-        ]);
+        // Dùng custom method từ HasCustomTokens trait
+        $tokenResponse = $user->createToken('login-token');
+        $token = $tokenResponse->plainTextToken;
 
         return response()->json([
             'token' => $token,

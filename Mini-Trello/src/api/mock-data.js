@@ -21,7 +21,7 @@ export const mockData = {
         _id: "column-id-01",
         boardId: "board-id-01",
         title: "To Do Column 01",
-        cardOrderIds: [
+        cardOrderIds: [  
           "card-id-01",
           "card-id-02",
           "card-id-03",

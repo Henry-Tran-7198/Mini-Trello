@@ -1,12 +1,12 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { CssBaseline } from '@mui/material'
-import { CustomThemeProvider } from '~/contexts/ThemeContext'
-import { AuthProvider } from '~/contexts/AuthContext'
-import AppRoutes from './routes/AppRoutes'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { CssBaseline } from "@mui/material";
+import { CustomThemeProvider } from "~/contexts/ThemeContext";
+import { AuthProvider } from "~/contexts/AuthContext";
+import AppRoutes from "./routes/AppRoutes";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <CustomThemeProvider>
       <CssBaseline />
@@ -16,5 +16,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </AuthProvider>
       </BrowserRouter>
     </CustomThemeProvider>
-  </React.StrictMode>
-)
+  </React.StrictMode>,
+);

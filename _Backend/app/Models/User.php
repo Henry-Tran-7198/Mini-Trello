@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Traits\HasCustomTokens;
 
 class User extends Authenticatable
 {
+    use HasCustomTokens;
+
     protected $fillable = [
         'email',
         'username',

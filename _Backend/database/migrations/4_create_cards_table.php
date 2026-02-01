@@ -13,16 +13,26 @@ return new class extends Migration
     {
         Schema::create('cards', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('board_id')->constrained('boards');
-            $table->foreignId('column_id')->constrained('columns');
+
+            $table->foreignId('board_id')
+                ->constrained('boards')
+                ->cascadeOnDelete();
+
+            $table->foreignId('column_id')
+                ->constrained('columns')
+                ->cascadeOnDelete();
+
             $table->string('title');
-            $table->string('cover');
-            $table->string('description');
+            $table->text('description')->nullable(); // mock-data cho phép null
+            $table->string('cover')->nullable();      // 🔥 FIX CHÍNH Ở ĐÂY
             $table->integer('orderCard');
+
+            $table->boolean('_destroy')->default(false);
+
             $table->timestamp('createdAt')->useCurrent();
             $table->timestamp('updatedAt')->nullable();
-            $table->integer('_destroy');
         });
+
     }
 
     /**
