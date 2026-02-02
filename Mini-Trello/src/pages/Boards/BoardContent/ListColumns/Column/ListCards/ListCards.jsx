@@ -6,11 +6,12 @@ import {
 } from "@dnd-kit/sortable";
 
 function ListCards({ cards, columnId, onEditCard, onDeleteCard }) {
+  // Ensure cards array exists and has valid items
+  const validCards = cards && Array.isArray(cards) ? cards : [];
+  const cardIds = validCards.map((c) => c._id).filter(Boolean);
+
   return (
-    <SortableContext
-      items={cards?.map((c) => c._id)}
-      strategy={verticalListSortingStrategy}
-    >
+    <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
       <Box
         sx={{
           p: "0 5px",
@@ -34,7 +35,7 @@ function ListCards({ cards, columnId, onEditCard, onDeleteCard }) {
           },
         }}
       >
-        {cards?.map((card) => (
+        {validCards.map((card) => (
           <Card
             key={card._id}
             card={card}

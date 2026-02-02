@@ -31,7 +31,7 @@ const MENU_STYLES = {
   "&:hover": { bgcolor: "rgba(255,255,255,0.15)" },
 };
 
-function BoardBar({ board, onMembersChange }) {
+function BoardBar({ board, onMembersChange, onMemberRemoved }) {
   const theme = useTheme();
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
 
@@ -43,6 +43,12 @@ function BoardBar({ board, onMembersChange }) {
   const handleMemberAdded = () => {
     if (onMembersChange) {
       onMembersChange();
+    }
+  };
+
+  const handleMemberRemoved = (memberId) => {
+    if (onMemberRemoved) {
+      onMemberRemoved(memberId);
     }
   };
 
@@ -107,7 +113,10 @@ function BoardBar({ board, onMembersChange }) {
           sx={{
             color: "white",
             borderColor: "white",
-            "&:hover": { borderColor: "white", bgcolor: "rgba(255,255,255,0.1)" },
+            "&:hover": {
+              borderColor: "white",
+              bgcolor: "rgba(255,255,255,0.1)",
+            },
           }}
         >
           Invite
@@ -123,17 +132,41 @@ function BoardBar({ board, onMembersChange }) {
               border: "none",
               cursor: "pointer",
               bgcolor: "#a4b0de",
+              position: "relative",
             },
           }}
         >
-          {getMembers().map((member) => (
-            <Tooltip key={member.id} title={`${member.username} (${member.role})`}>
-              <Avatar
-                alt={member.username}
-                src={member.avatar}
-              />
-            </Tooltip>
-          ))}
+          {getMembers().map((member) => {
+            const isPending = member.invitationStatus === "pending";
+            return (
+              <Box
+                key={member.id}
+                sx={{
+                  position: "relative",
+                }}
+              >
+                <Tooltip
+                  title={`${member.username} (${member.role})${isPending ? " - Pending" : ""}`}
+                >
+                  <Avatar alt={member.username} src={member.avatar} />
+                </Tooltip>
+                {isPending && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      width: "10px",
+                      height: "10px",
+                      borderRadius: "50%",
+                      backgroundColor: "#FF9800",
+                      border: "2px solid white",
+                    }}
+                  />
+                )}
+              </Box>
+            );
+          })}
         </AvatarGroup>
       </Box>
 
@@ -144,6 +177,7 @@ function BoardBar({ board, onMembersChange }) {
         boardId={board?._id}
         currentMembers={getMembers()}
         onMemberAdded={handleMemberAdded}
+        onMemberRemoved={handleMemberRemoved}
       />
     </Box>
   );

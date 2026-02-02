@@ -1,37 +1,45 @@
-import { useState, useContext } from 'react'
-import Box from '@mui/material/Box'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import Divider from '@mui/material/Divider'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import Avatar from '@mui/material/Avatar'
-import Tooltip from '@mui/material/Tooltip'
-import IconButton from '@mui/material/IconButton'
-import PersonAdd from '@mui/icons-material/PersonAdd'
-import Settings from '@mui/icons-material/Settings'
-import Logout from '@mui/icons-material/Logout'
-import { AuthContext } from '~/contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useState, useContext } from "react";
+import Box from "@mui/material/Box";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Divider from "@mui/material/Divider";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Avatar from "@mui/material/Avatar";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import PersonAdd from "@mui/icons-material/PersonAdd";
+import Settings from "@mui/icons-material/Settings";
+import Logout from "@mui/icons-material/Logout";
+import { AuthContext } from "~/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function Profiles() {
-  const [anchorEl, setAnchorEl] = useState(null)
-  const open = Boolean(anchorEl)
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
-  const { user, logout } = useContext(AuthContext)
-  const navigate = useNavigate()
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const getAvatarUrl = () => {
+    if (!user?.avatar) return "";
+    // Nếu user.avatar đã là URL đầy đủ, trả về trực tiếp
+    if (user.avatar.startsWith("http")) return user.avatar;
+    // Nếu là path tương đối, thêm domain
+    return `http://localhost:8000${user.avatar}`;
+  };
 
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
+    await logout();
+    navigate("/login");
+  };
 
   return (
     <Box>
@@ -40,14 +48,14 @@ function Profiles() {
           onClick={handleClick}
           size="small"
           sx={{ padding: 0 }}
-          aria-controls={open ? 'basic-menu-profiles' : undefined}
+          aria-controls={open ? "basic-menu-profiles" : undefined}
           aria-haspopup="true"
-          aria-expanded={open ? 'true' : undefined}
+          aria-expanded={open ? "true" : undefined}
         >
           <Avatar
             sx={{ width: 34, height: 34 }}
-            alt={user?.username || 'Avatar'}
-            src={user?.avatar || ''}
+            alt={user?.username || "Avatar"}
+            src={getAvatarUrl()}
           />
         </IconButton>
       </Tooltip>
@@ -61,8 +69,8 @@ function Profiles() {
         <MenuItem>
           <Avatar
             sx={{ width: 34, height: 34, mr: 1 }}
-            alt={user?.username || 'Avatar'}
-            src={user?.avatar || ''}
+            alt={user?.username || "Avatar"}
+            src={getAvatarUrl()}
           />
           <span>{user?.username || user?.email}</span>
         </MenuItem>
@@ -91,7 +99,7 @@ function Profiles() {
         </MenuItem>
       </Menu>
     </Box>
-  )
+  );
 }
 
-export default Profiles
+export default Profiles;

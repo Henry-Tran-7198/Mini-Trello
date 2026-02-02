@@ -15,7 +15,7 @@ export default function ThemeToggle() {
         onClick={toggleTheme}
         sx={{ color: 'white' }}
       >
-        {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+        {mode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
       </IconButton>
     </Tooltip>
   )

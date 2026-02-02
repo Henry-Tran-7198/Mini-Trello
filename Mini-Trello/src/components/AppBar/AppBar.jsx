@@ -7,7 +7,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import Badge from "@mui/material/Badge";
 import Tooltip from "@mui/material/Tooltip";
 import InputAdornment from "@mui/material/InputAdornment";
 import Dialog from "@mui/material/Dialog";
@@ -21,7 +20,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 // Icons
 import AppsIcon from "@mui/icons-material/Apps";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import SearchIcon from "@mui/icons-material/Search";
@@ -34,6 +32,7 @@ import Recent from "./Menus/Recent";
 import Starred from "./Menus/Starred";
 import Templates from "./Menus/Templates";
 import Profiles from "./Menus/Profiles";
+import NotificationIcon from "./NotificationIcon";
 import { boardApi } from "~/api/boardApi";
 
 // Assets (Vite SVG = URL)
@@ -196,11 +195,7 @@ function AppBar() {
 
         <ThemeToggle />
 
-        <Tooltip title="Notifications">
-          <Badge color="warning" variant="dot">
-            <NotificationsNoneIcon sx={{ color: "white", cursor: "pointer" }} />
-          </Badge>
-        </Tooltip>
+        <NotificationIcon />
 
         <Tooltip title="Help">
           <HelpOutlineIcon sx={{ color: "white", cursor: "pointer" }} />

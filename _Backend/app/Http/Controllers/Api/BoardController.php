@@ -7,6 +7,9 @@ use App\Models\Board;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Auth;
+use App\Events\MemberRemovedFromBoard;
+use App\Events\NotificationCreated;
+use App\Events\BoardDeleted;
 
 class BoardController extends Controller
 {
@@ -58,6 +61,14 @@ class BoardController extends Controller
             'users'
         ])->findOrFail($id);
 
+        // Check if current user is a member of this board
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
+
         // ownerIds & memberIds
         $ownerIds = [];
         $memberIds = [];
@@ -69,7 +80,8 @@ class BoardController extends Controller
                 'username' => $user->username,
                 'email' => $user->email,
                 'avatar' => $user->avatar,
-                'role' => $user->pivot->role
+                'role' => $user->pivot->role,
+                'invitationStatus' => 'accepted'
             ];
 
             if ($user->pivot->role === 'owner') {
@@ -77,6 +89,24 @@ class BoardController extends Controller
             } else {
                 $memberIds[] = (string) $user->id;
             }
+        }
+
+        // Get pending invitations for this board
+        $pendingInvitations = \App\Models\Invitation::with('invitee')
+            ->where('board_id', $id)
+            ->where('status', 'pending')
+            ->get();
+
+        foreach ($pendingInvitations as $invitation) {
+            $users[] = [
+                'id' => (string) $invitation->invitee->id,
+                'username' => $invitation->invitee->username,
+                'email' => $invitation->invitee->email,
+                'avatar' => $invitation->invitee->avatar,
+                'role' => 'member',
+                'invitationStatus' => 'pending',
+                'invitationId' => (string) $invitation->id
+            ];
         }
 
         $columns = [];
@@ -219,6 +249,49 @@ class BoardController extends Controller
             ], 403);
         }
 
+        // Get all users in the board (except the current user)
+        $boardUsers = $board->users()->where('user_id', '!=', Auth::id())->get();
+
+        // Create notifications and broadcast to all users
+        foreach ($boardUsers as $user) {
+            // Create notification for each user
+            $notification = \App\Models\Notification::create([
+                'user_id' => $user->id,
+                'type' => 'board_deleted',
+                'title' => 'Board đã bị xoá',
+                'message' => 'Board "' . $board->title . '" đã bị xoá bởi ' . Auth::user()->username,
+                'data' => [
+                    'board_id' => (string) $board->id,
+                    'board_title' => $board->title,
+                    'deleted_by' => Auth::user()->username
+                ],
+                'is_read' => false
+            ]);
+
+            // Broadcast notification to user (real-time)
+            try {
+                broadcast(new NotificationCreated($notification));
+            } catch (\Exception $e) {
+                \Log::warning('Failed to broadcast board deletion notification: ' . $e->getMessage());
+            }
+
+            // Broadcast board deleted event (for real-time redirect)
+            try {
+                broadcast(new BoardDeleted(
+                    $board->id,
+                    $board->title,
+                    Auth::user()->username,
+                    $user->id
+                ));
+            } catch (\Exception $e) {
+                \Log::warning('Failed to broadcast board deleted event: ' . $e->getMessage());
+            }
+        }
+
+        // Remove all users from board
+        $board->users()->detach();
+
+        // Mark board as deleted
         $board->_destroy = 1;
         $board->save();
 
@@ -279,23 +352,61 @@ class BoardController extends Controller
             ], 400);
         }
 
-        // Add user to board
-        $board->users()->attach($userId, [
-            'role' => 'member'
+        // Kiểm tra có pending invitation không
+        $existingInvitation = \App\Models\Invitation::where([
+            ['invitee_id', $userId],
+            ['board_id', $id],
+            ['status', 'pending']
+        ])->first();
+
+        if ($existingInvitation) {
+            return response()->json([
+                'message' => 'Invitation already sent to this user'
+            ], 400);
+        }
+
+        // Xoá invitation cũ (rejected, ...) để có thể invite lại
+        \App\Models\Invitation::where([
+            ['invitee_id', $userId],
+            ['board_id', $id]
+        ])->delete();
+
+        // Create invitation
+        $invitation = \App\Models\Invitation::create([
+            'inviter_id' => Auth::id(),
+            'invitee_id' => $userId,
+            'board_id' => $id,
+            'type' => 'board_member',
+            'status' => 'pending'
         ]);
 
-        $user = \App\Models\User::find($userId);
+        // Create notification for invited user
+        $notification = \App\Models\Notification::create([
+            'user_id' => $userId,
+            'type' => 'board_invitation',
+            'title' => 'Lời mời vào board',
+            'message' => Auth::user()->username . ' mời bạn vào board "' . $board->title . '"',
+            'data' => [
+                'board_id' => (string) $board->id,
+                'board_title' => $board->title,
+                'inviter_id' => (string) Auth::id(),
+                'inviter_username' => Auth::user()->username,
+                'invitation_id' => (string) $invitation->id
+            ],
+            'is_read' => false
+        ]);
+
+        // Broadcast notification to invited user (real-time)
+        try {
+            broadcast(new NotificationCreated($notification));
+        } catch (\Exception $e) {
+            // Log broadcast error but don't fail the API
+            \Log::warning('Failed to broadcast notification: ' . $e->getMessage());
+        }
 
         return response()->json([
-            'message' => 'Member invited successfully',
-            'member' => [
-                'id' => (string) $user->id,
-                'username' => $user->username,
-                'email' => $user->email,
-                'avatar' => $user->avatar,
-                'role' => 'member'
-            ]
-        ], 201);
+            'message' => 'Invitation sent successfully'
+        ]);
     }
 
     /**
@@ -330,6 +441,39 @@ class BoardController extends Controller
         }
 
         $board->users()->detach($userId);
+
+        // Create notification for removed user
+        $notification = \App\Models\Notification::create([
+            'user_id' => $userId,
+            'type' => 'member_removed',
+            'title' => 'Bị xoá khỏi board',
+            'message' => 'Bạn đã bị xoá khỏi board "' . $board->title . '" bởi ' . auth()->user()->username,
+            'data' => [
+                'board_id' => (string) $board->id,
+                'board_title' => $board->title,
+                'removed_by' => auth()->user()->username
+            ],
+            'is_read' => false
+        ]);
+
+        // Broadcast notification to user
+        try {
+            broadcast(new NotificationCreated($notification));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast notification: ' . $e->getMessage());
+        }
+
+        // Broadcast member removal event (for real-time redirect)
+        try {
+            broadcast(new MemberRemovedFromBoard(
+                $board->id,
+                $userId,
+                $board->title,
+                auth()->user()->username
+            ));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast member removal: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Member removed successfully'

@@ -130,7 +130,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Column;
 use App\Models\Card;
+use App\Models\Board;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CardController extends Controller
 {
@@ -144,6 +146,15 @@ class CardController extends Controller
             'cover'    => 'nullable|string',
             'description' => 'nullable|string'
         ]);
+
+        // Check if user is a member of the board
+        $board = Board::findOrFail($request->boardId);
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
 
         $column = Column::where('id', $request->columnId)
             ->where('board_id', $request->boardId)
@@ -187,11 +198,43 @@ class CardController extends Controller
     // CARD DETAIL (modal)
     public function show($id)
     {
-        return Card::with([
+        $card = Card::with([
             'members:id,username,email,avatar',
             'comments.user:id,username,avatar',
             'attachments'
         ])->findOrFail($id);
+
+        return response()->json([
+            'card' => [
+                'id' => (string) $card->id,
+                'title' => $card->title,
+                'description' => $card->description,
+                'cover' => $card->cover,
+                'members' => $card->members->map(fn($member) => [
+                    'id' => (string) $member->id,
+                    'username' => $member->username,
+                    'email' => $member->email,
+                    'avatar' => $member->avatar
+                ])->toArray(),
+                'comments' => $card->comments->map(fn($comment) => [
+                    'id' => (string) $comment->id,
+                    'content' => $comment->content,
+                    'createdAt' => $comment->createdAt,
+                    'user' => [
+                        'id' => (string) $comment->user->id,
+                        'username' => $comment->user->username,
+                        'avatar' => $comment->user->avatar
+                    ]
+                ])->toArray(),
+                'attachments' => $card->attachments->map(fn($attachment) => [
+                    'id' => (string) $attachment->id,
+                    'fileName' => $attachment->fileName,
+                    'fileType' => $attachment->fileType,
+                    'fileURL' => $attachment->fileURL,
+                    'createdAt' => $attachment->createdAt
+                ])->toArray()
+            ]
+        ]);
     }
 
     /**
@@ -200,6 +243,15 @@ class CardController extends Controller
     public function update(Request $request, $id)
     {
         $card = Card::findOrFail($id);
+
+        // Check if user is a member of the board
+        $board = Board::findOrFail($card->board_id);
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
 
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
@@ -233,6 +285,15 @@ class CardController extends Controller
     {
         $card = Card::findOrFail($id);
 
+        // Check if user is a member of the board
+        $board = Board::findOrFail($card->board_id);
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
+
         $request->validate([
             'toColumnId' => 'required|exists:columns,id',
             'orderCard'  => 'required|integer'
@@ -254,6 +315,15 @@ class CardController extends Controller
     public function destroy($id)
     {
         $card = Card::findOrFail($id);
+
+        // Check if user is a member of the board
+        $board = Board::findOrFail($card->board_id);
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
 
         $card->_destroy = 1;
         $card->save();

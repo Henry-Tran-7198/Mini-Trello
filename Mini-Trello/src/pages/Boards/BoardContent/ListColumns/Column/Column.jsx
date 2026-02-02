@@ -80,7 +80,6 @@ function Column({
   return (
     <div ref={setNodeRef} style={dndKitColumnStyle} {...attributes}>
       <Box
-        {...listeners}
         sx={{
           minWidth: "300px",
           maxWidth: "300px",
@@ -95,12 +94,17 @@ function Column({
       >
         {/* Box Column Header */}
         <Box
+          {...listeners}
           sx={{
             height: (theme) => theme.trello.columnHeaderHeight,
             p: 2,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            cursor: "grab",
+            "&:active": {
+              cursor: "grabbing",
+            },
           }}
         >
           {isEditing ? (

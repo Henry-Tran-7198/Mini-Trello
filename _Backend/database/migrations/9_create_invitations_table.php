@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'accepted', 'rejected']);
             $table->timestamp('createdAt')->useCurrent();
             $table->timestamp('updatedAt')->nullable();
-            $table->boolean('_destroy');
+            $table->boolean('_destroy')->default(false);
         });
     }
 

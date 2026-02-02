@@ -9,10 +9,16 @@ use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CardMemberController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\InvitationController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\EventStreamController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// REAL-TIME EVENTS (Server-Sent Events) - No middleware, auth handled in controller
+Route::get('/events/stream', [EventStreamController::class, 'stream']);
 
 Route::middleware('auth.token')->group(function () {
 
@@ -55,5 +61,14 @@ Route::middleware('auth.token')->group(function () {
     Route::post('/card-members', [CardMemberController::class, 'store']);
     Route::delete('/card-members', [CardMemberController::class, 'destroy']);
 
+    // INVITATIONS
+    Route::get('/invitations', [InvitationController::class, 'index']);
+    Route::post('/invitations/{id}/accept', [InvitationController::class, 'accept']);
+    Route::post('/invitations/{id}/reject', [InvitationController::class, 'reject']);
+
+    // NOTIFICATIONS
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
 });

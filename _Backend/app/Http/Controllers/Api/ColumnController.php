@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Column;
 use App\Models\Board;
+use Illuminate\Support\Facades\Auth;
 
 class ColumnController extends Controller
 {
@@ -18,6 +19,15 @@ class ColumnController extends Controller
             'boardId' => 'required|exists:boards,id',
             'title' => 'required|string|max:255'
         ]);
+
+        // Check if user is a member of the board
+        $board = Board::findOrFail($request->boardId);
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
 
         // Tính orderColumn tiếp theo
         $maxOrder = Column::where('board_id', $request->boardId)->max('orderColumn');
@@ -56,6 +66,15 @@ class ColumnController extends Controller
     {
         $column = Column::findOrFail($id);
 
+        // Check if user is a member of the board
+        $board = Board::findOrFail($column->board_id);
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
+
         $request->validate([
             'title' => 'sometimes|required|string|max:255'
         ]);
@@ -80,6 +99,15 @@ class ColumnController extends Controller
     public function destroy($id)
     {
         $column = Column::findOrFail($id);
+
+        // Check if user is a member of the board
+        $board = Board::findOrFail($column->board_id);
+        $isMember = $board->users()->where('user_id', Auth::id())->exists();
+        if (!$isMember) {
+            return response()->json([
+                'message' => 'Unauthorized - You are not a member of this board'
+            ], 403);
+        }
 
         $column->_destroy = 1;
         $column->save();

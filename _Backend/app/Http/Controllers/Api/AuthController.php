@@ -68,7 +68,7 @@ class AuthController extends Controller
                 'id'       => $user->id,
                 'email'    => $user->email,
                 'username' => $user->username,
-                'avatar'   => '/storage/' . $user->avatar
+                'avatar'   => $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.png')
             ]
         ]);
     }
@@ -99,7 +99,7 @@ class AuthController extends Controller
             'id'       => $user->id,
             'email'    => $user->email,
             'username' => $user->username,
-            'avatar'   => '/storage/' . $user->avatar
+            'avatar'   => $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.png')
         ]);
     }
 

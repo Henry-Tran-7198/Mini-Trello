@@ -8,7 +8,7 @@ export const userApi = {
    */
   searchUsers(query) {
     return axios.get("/users/search", {
-      params: { q: query }
+      params: { q: query },
     });
   },
 
@@ -19,5 +19,5 @@ export const userApi = {
    */
   getUser(userId) {
     return axios.get(`/users/${userId}`);
-  }
+  },
 };
