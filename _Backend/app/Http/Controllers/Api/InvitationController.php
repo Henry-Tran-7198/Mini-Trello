@@ -9,8 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use App\Events\NotificationCreated;
 
-
-
 class InvitationController extends Controller
 {
     /**
@@ -53,13 +51,17 @@ class InvitationController extends Controller
         ]);
     }
 
+<<<<<<< HEAD
     /**
      * POST /api/invitations/:id/accept - Accept invitation
      */
+=======
+>>>>>>> df72ae48bb749016e5e7ea3b01e3def9e4eecb17
     public function accept($id)
     {
         $invitation = Invitation::findOrFail($id);
 
+<<<<<<< HEAD
         // Check if user is the invitee
         if ($invitation->invitee_id !== auth()->id()) {
             return response()->json([
@@ -85,6 +87,20 @@ class InvitationController extends Controller
         $invitation->update(['status' => 'accepted']);
 
         // Create notification for inviter
+=======
+        if ($invitation->invitee_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($invitation->status !== 'pending') {
+            return response()->json(['message' => 'Invitation already ' . $invitation->status], 400);
+        }
+
+        $board = $invitation->board;
+        $board->users()->attach(auth()->id(), ['role' => 'member', 'createdAt' => now()]);
+        $invitation->update(['status' => 'accepted']);
+
+>>>>>>> df72ae48bb749016e5e7ea3b01e3def9e4eecb17
         $notification = \App\Models\Notification::create([
             'user_id' => $invitation->inviter_id,
             'type' => 'member_accepted',
@@ -99,7 +115,10 @@ class InvitationController extends Controller
             'is_read' => false
         ]);
 
+<<<<<<< HEAD
         // Broadcast notification to inviter (real-time)
+=======
+>>>>>>> df72ae48bb749016e5e7ea3b01e3def9e4eecb17
         try {
             broadcast(new NotificationCreated($notification));
         } catch (\Exception $e) {
@@ -115,13 +134,17 @@ class InvitationController extends Controller
         ]);
     }
 
+<<<<<<< HEAD
     /**
      * POST /api/invitations/:id/reject - Reject invitation
      */
+=======
+>>>>>>> df72ae48bb749016e5e7ea3b01e3def9e4eecb17
     public function reject($id)
     {
         $invitation = Invitation::findOrFail($id);
 
+<<<<<<< HEAD
         // Check if user is the invitee
         if ($invitation->invitee_id !== auth()->id()) {
             return response()->json([
@@ -140,6 +163,18 @@ class InvitationController extends Controller
         $invitation->update(['status' => 'rejected']);
 
         // Create notification for inviter about rejection
+=======
+        if ($invitation->invitee_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($invitation->status !== 'pending') {
+            return response()->json(['message' => 'Invitation already ' . $invitation->status], 400);
+        }
+
+        $invitation->update(['status' => 'rejected']);
+
+>>>>>>> df72ae48bb749016e5e7ea3b01e3def9e4eecb17
         $board = $invitation->board;
         $notification = \App\Models\Notification::create([
             'user_id' => $invitation->inviter_id,
@@ -155,7 +190,10 @@ class InvitationController extends Controller
             'is_read' => false
         ]);
 
+<<<<<<< HEAD
         // Broadcast notification to inviter (real-time)
+=======
+>>>>>>> df72ae48bb749016e5e7ea3b01e3def9e4eecb17
         try {
             broadcast(new NotificationCreated($notification));
         } catch (\Exception $e) {
@@ -164,10 +202,14 @@ class InvitationController extends Controller
 
         return response()->json([
             'message' => 'Invitation rejected',
+<<<<<<< HEAD
             'invitation' => [
                 'id' => (string) $invitation->id,
                 'status' => $invitation->status,
             ]
+=======
+            'invitation' => ['id' => (string) $invitation->id, 'status' => $invitation->status]
+>>>>>>> df72ae48bb749016e5e7ea3b01e3def9e4eecb17
         ]);
     }
 }
