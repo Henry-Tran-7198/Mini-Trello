@@ -17,7 +17,7 @@ class EventStreamController extends Controller
         // Get token from Authorization header or query parameter
         $token = null;
         $authHeader = $request->header('Authorization');
-        
+
         if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
             $token = substr($authHeader, 7);
         } elseif ($request->query('token')) {
@@ -39,13 +39,22 @@ class EventStreamController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        // Set up streaming response
         return response()->stream(function () use ($user) {
-            // Keep the connection alive
-            while (true) {
+            // Send initial heartbeat
+            echo ": heartbeat\n\n";
+            flush();
+
+            // Keep connection alive with periodic heartbeats
+            $startTime = time();
+            $maxDuration = 300; // 5 minutes max
+
+            while ((time() - $startTime) < $maxDuration) {
                 // Check for new notifications
                 $notifications = $user->notifications()
                     ->where('is_read', false)
-                    ->orderBy('createdAt', 'desc')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10)
                     ->get();
 
                 if ($notifications->count() > 0) {
@@ -58,19 +67,20 @@ class EventStreamController extends Controller
                                 'title' => $notification->title,
                                 'message' => $notification->message,
                                 'data' => $notification->data,
-                                'createdAt' => $notification->createdAt
+                                'createdAt' => $notification->created_at
                             ]
                         ]) . "\n\n";
+                        flush();
 
                         // Mark as read after sending
                         $notification->update(['is_read' => true]);
                     }
                 }
 
-                // Send heartbeat every 5 seconds
+                // Send heartbeat every 3 seconds to keep connection alive
                 echo ": heartbeat\n\n";
                 flush();
-                sleep(5);
+                sleep(3);
             }
         }, 200, [
             'Content-Type' => 'text/event-stream',

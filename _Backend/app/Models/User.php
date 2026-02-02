@@ -16,6 +16,7 @@ class User extends Authenticatable
         'avatar',
         'role',
         'isActive',
+        'notification_preferences',
     ];
 
     public $timestamps = true;
@@ -24,4 +25,8 @@ class User extends Authenticatable
     const UPDATED_AT = 'updatedAt';
 
     protected $hidden = ['password'];
+
+    protected $casts = [
+        'notification_preferences' => 'json',
+    ];
 }

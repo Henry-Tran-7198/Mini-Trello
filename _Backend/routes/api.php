@@ -5,9 +5,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BoardController;
 use App\Http\Controllers\Api\ColumnController;
 use App\Http\Controllers\Api\CardController;
-use App\Http\Controllers\Api\AttachmentController;
-use App\Http\Controllers\Api\CommentController;
-use App\Http\Controllers\Api\CardMemberController;
+use App\Http\Controllers\Api\Card\AttachmentController;
+use App\Http\Controllers\Api\Card\CommentController;
+use App\Http\Controllers\Api\Card\CardMemberController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\NotificationController;
@@ -25,10 +25,13 @@ Route::middleware('auth.token')->group(function () {
     // AUTH
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
 
     // USER
     Route::get('/users/search', [UserController::class, 'search']);
     Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::get('/users/preferences/notification', [UserController::class, 'getNotificationPreferences']);
+    Route::put('/users/preferences/notification', [UserController::class, 'updateNotificationPreferences']);
 
     // BOARD
     Route::get('/boards', [BoardController::class, 'index']);
@@ -44,6 +47,7 @@ Route::middleware('auth.token')->group(function () {
     Route::post('/columns', [ColumnController::class, 'store']);
     Route::put('/columns/{id}', [ColumnController::class, 'update']);
     Route::delete('/columns/{id}', [ColumnController::class, 'destroy']);
+    Route::put('/boards/{boardId}/columns-order', [ColumnController::class, 'updateOrder']);
 
     // CARD
     Route::post('/cards', [CardController::class, 'store']);

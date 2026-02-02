@@ -66,7 +66,8 @@ export default function NotificationIcon() {
     eventStream.on("notification", handleNewNotification);
 
     // Connect to real-time event stream
-    const token = localStorage.getItem("token");
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
     if (token) {
       eventStream.connect(token);
     }

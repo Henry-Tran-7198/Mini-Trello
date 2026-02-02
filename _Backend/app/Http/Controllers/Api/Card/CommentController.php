@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Card;
 
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Card;
 use App\Models\Board;
+use App\Models\Notification;
+use App\Events\NotificationCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CommentController extends Controller
 {
@@ -36,6 +39,38 @@ class CommentController extends Controller
 
         // Return comment with user data
         $comment->load('user:id,username,avatar');
+
+        // Create notification for board members
+        $board = Board::findOrFail($card->board_id);
+        $currentUser = Auth::user();
+
+        try {
+            // Notify all board members except the current user
+            $board->users()
+                ->where('user_id', '!=', $currentUser->id)
+                ->get()
+                ->each(function($user) use ($currentUser, $card) {
+                    $notification = Notification::create([
+                        'user_id' => $user->id,
+                        'type' => 'card_comment',
+                        'title' => 'New Comment',
+                        'message' => $currentUser->username . ' commented on card "' . $card->title . '"',
+                        'data' => json_encode([
+                            'card_id' => (string)$card->id,
+                            'board_id' => (string)$card->board_id,
+                            'actor' => $currentUser->username
+                        ])
+                    ]);
+
+                    try {
+                        broadcast(new NotificationCreated($notification));
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to broadcast comment notification: ' . $e->getMessage());
+                    }
+                });
+        } catch (\Exception $e) {
+            Log::warning('Failed to create comment notifications: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Comment created successfully',

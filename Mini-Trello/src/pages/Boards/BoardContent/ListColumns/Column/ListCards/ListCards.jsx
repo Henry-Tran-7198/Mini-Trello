@@ -7,8 +7,27 @@ import {
 
 function ListCards({ cards, columnId, onEditCard, onDeleteCard }) {
   // Ensure cards array exists and has valid items
-  const validCards = cards && Array.isArray(cards) ? cards : [];
-  const cardIds = validCards.map((c) => c._id).filter(Boolean);
+  const allCards = cards && Array.isArray(cards) ? cards : [];
+
+  // Filter out cards with missing IDs and remove duplicates
+  const cardMap = new Map();
+  allCards.forEach((card) => {
+    if (card._id) {
+      cardMap.set(card._id, card);
+    }
+  });
+
+  const validCards = Array.from(cardMap.values());
+  const cardIds = validCards.map((c) => c._id);
+
+  console.log(
+    "🔴 ListCards - Column ID:",
+    columnId,
+    "Cards count:",
+    validCards.length,
+    "Card IDs:",
+    cardIds,
+  );
 
   return (
     <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
@@ -27,11 +46,20 @@ function ListCards({ cards, columnId, onEditCard, onDeleteCard }) {
                                 ${theme.trello.columnHeaderHeight} -
                                 ${theme.trello.columnFooterHeight}
                                 )`,
+          transition: "background-color 0.2s ease",
+          "&::-webkit-scrollbar": {
+            width: "8px",
+          },
+          "&::-webkit-scrollbar-track": {
+            backgroundColor: "transparent",
+          },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#ced0da",
-          },
-          "&::-webkit-scrollbar-thumb:hover": {
-            backgroundColor: "#bfc2cf",
+            borderRadius: "4px",
+            transition: "background-color 0.2s ease",
+            "&:hover": {
+              backgroundColor: "#bfc2cf",
+            },
           },
         }}
       >

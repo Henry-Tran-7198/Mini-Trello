@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use App\Events\NotificationCreated;
 
+
+
 class InvitationController extends Controller
 {
     /**

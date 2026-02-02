@@ -1,6 +1,7 @@
 import Box from "@mui/material/Box";
 import React, { useState } from "react";
 import Button from "@mui/material/Button";
+import { keyframes } from "@mui/system";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
@@ -22,6 +23,16 @@ import { mapOrder } from "~/utils/sorts";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+// Pulse animation for hover effect
+const pulseAnimation = keyframes`
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.6), 0 12px 32px rgba(76, 175, 80, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(76, 175, 80, 0.4), 0 12px 32px rgba(76, 175, 80, 0.9);
+  }
+`;
+
 function Column({
   column,
   onDeleteColumn,
@@ -29,6 +40,7 @@ function Column({
   onAddCard,
   onEditCard,
   onDeleteCard,
+  overColumnId,
 }) {
   //Property of dnd-kit
   const {
@@ -44,13 +56,10 @@ function Column({
   });
 
   const dndKitColumnStyle = {
-    // touchAction: 'none',
-    //Nếu sử dung CSS.Transform như docx sẽ lỗi kiểu stretch
     transform: CSS.Translate.toString(transform),
-    transition,
-    // Chiều cao phải luôn max 100% vì không sẽ có lỗi column ngắn-column dài
+    transition: isDragging ? "none" : transition,
     height: "100%",
-    opacity: isDragging ? 0.5 : undefined,
+    opacity: isDragging ? 0.7 : 1,
   };
   //Property of dnd-kit
 
@@ -90,6 +99,39 @@ function Column({
           height: "fit-content",
           maxHeight: (theme) =>
             `calc(${theme.trello.boardContentHeight} - ${theme.spacing(5)})`,
+          boxShadow: isDragging
+            ? "0 8px 24px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)"
+            : overColumnId === column._id
+              ? "0 0 0 3px rgba(76, 175, 80, 0.6), 0 12px 32px rgba(76, 175, 80, 0.7)"
+              : "0 1px 3px rgba(0, 0, 0, 0.1)",
+          animation:
+            overColumnId === column._id
+              ? `${pulseAnimation} 2s infinite`
+              : "none",
+          transition: isDragging
+            ? "none"
+            : "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+          backgroundColor: isDragging
+            ? (theme) => (theme.palette.mode === "dark" ? "#3d3f45" : "#f0f1f4")
+            : overColumnId === column._id
+              ? (theme) =>
+                  theme.palette.mode === "dark" ? "#1b5e20" : "#e8f5e9"
+              : undefined,
+          transform: isDragging
+            ? "scale(1.02)"
+            : overColumnId === column._id
+              ? "scale(1.01)"
+              : "scale(1)",
+          border: isDragging
+            ? "2px solid #1976d2"
+            : overColumnId === column._id
+              ? "3px solid #4caf50"
+              : "2px solid transparent",
+          "&:hover": !isDragging
+            ? {
+                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+              }
+            : {},
         }}
       >
         {/* Box Column Header */}
@@ -101,10 +143,8 @@ function Column({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            cursor: "grab",
-            "&:active": {
-              cursor: "grabbing",
-            },
+            cursor: isDragging ? "grabbing" : "grab",
+            userSelect: "none",
           }}
         >
           {isEditing ? (
@@ -232,11 +272,30 @@ function Column({
           <Button
             startIcon={<AddCardIcon />}
             onClick={() => onAddCard(column._id)}
+            sx={{
+              color: "text.primary",
+              textTransform: "none",
+              fontSize: "0.95rem",
+              fontWeight: 500,
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.05)",
+              },
+            }}
           >
             Add new card
           </Button>
           <Tooltip title="Drag to move">
-            <DragHandleIcon sx={{ cursor: "pointer" }} />
+            <DragHandleIcon
+              sx={{
+                cursor: "pointer",
+                opacity: 0.6,
+                transition: "opacity 0.2s ease",
+                "&:hover": {
+                  opacity: 1,
+                },
+              }}
+            />
           </Tooltip>
         </Box>
       </Box>

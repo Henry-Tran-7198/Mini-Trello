@@ -67,7 +67,8 @@ export default function Board({ board }) {
     eventStream.on("boardDeleted", handleBoardDeleted);
 
     // Connect to real-time event stream if not already connected
-    const token = localStorage.getItem("token");
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
     if (token && !eventStream.isConnected()) {
       eventStream.connect(token);
     }

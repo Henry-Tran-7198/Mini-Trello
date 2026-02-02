@@ -58,6 +58,16 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account inactive'], 403);
         }
 
+        // Only allow 1 active session per user
+        // Delete all existing tokens when user logs in again
+        $maxTokens = 1;
+        $tokenCount = $user->tokens()->count();
+
+        if ($tokenCount >= $maxTokens) {
+            // Delete all existing tokens to allow only 1 session
+            $user->tokens()->delete();
+        }
+
         // Dùng custom method từ HasCustomTokens trait
         $tokenResponse = $user->createToken('login-token');
         $token = $tokenResponse->plainTextToken;

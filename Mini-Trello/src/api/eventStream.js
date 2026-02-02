@@ -20,11 +20,10 @@ class EventStreamService {
 
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
-    this.eventSource = new EventSource(`${apiUrl}/events/stream`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // EventSource doesn't support headers in constructor, use query parameter instead
+    const streamUrl = `${apiUrl}/events/stream?token=${encodeURIComponent(token)}`;
+
+    this.eventSource = new EventSource(streamUrl);
 
     // Handle incoming events
     this.eventSource.addEventListener("message", (event) => {
@@ -38,14 +37,17 @@ class EventStreamService {
 
     // Handle connection open
     this.eventSource.addEventListener("open", () => {
-      console.log("Real-time connection established");
+      console.log("✅ Real-time connection established");
       this.reconnectAttempts = 0;
       this.reconnectDelay = 1000;
     });
 
     // Handle connection errors
-    this.eventSource.addEventListener("error", () => {
-      console.warn("Real-time connection lost, attempting to reconnect...");
+    this.eventSource.addEventListener("error", (err) => {
+      console.warn(
+        "❌ Real-time connection lost, attempting to reconnect...",
+        err,
+      );
       this.disconnect();
       this.reconnect(token);
     });

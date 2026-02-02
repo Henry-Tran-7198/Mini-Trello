@@ -30,7 +30,7 @@ Mini Trello là một bản clone của Trello được xây dựng bằng **Lar
 ### Bước 1: Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Henry-Tran-7198/Mini-Trello/tree/mini_trello
 cd Mini-Trello
 ```
 

@@ -1,7 +1,12 @@
-import AppRoutes from './routes/AppRoutes'
+import AppRoutes from "./routes/AppRoutes";
+import { CustomThemeProvider } from "./contexts/ThemeContext";
 
 function App() {
-  return <AppRoutes />
+  return (
+    <CustomThemeProvider>
+      <AppRoutes />
+    </CustomThemeProvider>
+  );
 }
 
-export default App
+export default App;

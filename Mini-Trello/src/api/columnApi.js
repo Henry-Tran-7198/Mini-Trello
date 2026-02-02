@@ -21,6 +21,18 @@ export const columnApi = {
   },
 
   /**
+   * Cập nhật vị trí (order) của column
+   * @param {string|number} boardId - ID của board
+   * @param {Array<string>} columnOrderIds - Mảng ID columns theo thứ tự mới
+   * @returns {Promise}
+   */
+  updateOrder(boardId, columnOrderIds) {
+    return axios.put(`/boards/${boardId}/columns-order`, {
+      columnOrderIds,
+    });
+  },
+
+  /**
    * Xóa column
    * @param {string|number} columnId - ID của column
    * @returns {Promise}

@@ -36,14 +36,19 @@ function Card({ card, columnId, onEditCard, onDeleteCard }) {
     },
   });
 
-  // Debug log
-  console.log(`Card [${card._id}] - columnId: ${columnId}, type: CARD`);
+  console.log(
+    "🔴 Card Component - Card ID:",
+    card._id,
+    "isDragging:",
+    isDragging,
+    "has listeners:",
+    !!listeners,
+  );
 
   const dndKitCardStyle = {
     transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : undefined,
-    border: isDragging ? "1px solid #2ecc71" : undefined,
+    transition: isDragging ? "none" : transition,
+    opacity: isDragging ? 0.7 : 1,
   };
 
   const shouldShowCardActions = () => {
@@ -60,22 +65,46 @@ function Card({ card, columnId, onEditCard, onDeleteCard }) {
       style={dndKitCardStyle}
       {...attributes}
       {...listeners}
+      tabIndex={0}
       sx={{
-        cursor: "grab",
-        boxShadow: "0 1px 1px rgba(0, 0, 0, 0.2)",
+        cursor: isDragging ? "grabbing" : "grab",
+        boxShadow: isDragging
+          ? "0 8px 24px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)"
+          : "0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)",
         overflow: "visible",
         display: "block",
         height: card?.FE_PlaceholderCard ? 0 : "auto",
         minHeight: 0,
         padding: 0,
-        opacity: card?.FE_PlaceholderCard ? 0 : 1,
+        opacity: isDragging ? 0.3 : 1,
         pointerEvents: card?.FE_PlaceholderCard ? "none" : "auto",
-        "&:active": {
-          cursor: "grabbing",
+        transition: isDragging
+          ? "none"
+          : "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        transform: isDragging
+          ? "rotate(4deg) scale(1.05)"
+          : "rotate(0deg) scale(1)",
+        backgroundColor: (theme) => theme.palette.background.paper,
+        "&:focus": {
+          outline: "2px solid #1976d2",
+          outlineOffset: "2px",
+        },
+        "&:hover": {
+          boxShadow: isDragging
+            ? "0 8px 24px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)"
+            : "0 2px 6px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23)",
+          transform: isDragging
+            ? "rotate(4deg) scale(1.05)"
+            : "translateY(-2px)",
         },
         "&:hover .card-actions": {
           display: "flex",
         },
+        // Highlight when this card is a drop target
+        ...(isDragging && {
+          borderTop: "3px solid #1976d2",
+          borderRadius: "6px",
+        }),
       }}
     >
       {card?.cover && (
@@ -86,7 +115,16 @@ function Card({ card, columnId, onEditCard, onDeleteCard }) {
         />
       )}
       <CardContent sx={{ p: 1.5, "&:last-child": { p: 1.5 } }}>
-        <Typography>{card?.title}</Typography>
+        <Typography
+          sx={{
+            fontWeight: 500,
+            fontSize: "0.95rem",
+            lineHeight: 1.4,
+            wordBreak: "break-word",
+          }}
+        >
+          {card?.title}
+        </Typography>
       </CardContent>
       {shouldShowCardActions() && (
         <CardActions sx={{ p: "0 4px 8px 4px" }}>

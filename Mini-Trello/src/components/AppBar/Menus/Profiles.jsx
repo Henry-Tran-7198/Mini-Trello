@@ -36,6 +36,11 @@ function Profiles() {
     setAnchorEl(null);
   };
 
+  const handleSettings = () => {
+    navigate("/settings");
+    handleClose();
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate("/login");
@@ -77,14 +82,7 @@ function Profiles() {
 
         <Divider />
 
-        <MenuItem>
-          <ListItemIcon>
-            <PersonAdd fontSize="small" />
-          </ListItemIcon>
-          Add another account
-        </MenuItem>
-
-        <MenuItem>
+        <MenuItem onClick={handleSettings}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>

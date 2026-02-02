@@ -11,6 +11,8 @@ use App\Events\MemberRemovedFromBoard;
 use App\Events\NotificationCreated;
 use App\Events\BoardDeleted;
 
+
+
 class BoardController extends Controller
 {
         public function store(Request $request)

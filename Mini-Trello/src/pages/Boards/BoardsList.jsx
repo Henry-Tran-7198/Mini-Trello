@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 import {
   Box,
   Container,
@@ -27,6 +28,7 @@ import { AuthContext } from "~/contexts/AuthContext";
 import AppBar from "~/components/AppBar/AppBar";
 
 export default function BoardsList() {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
   const [boards, setBoards] = useState([]);
@@ -145,7 +147,15 @@ export default function BoardsList() {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background:
+          theme.palette.mode === "dark"
+            ? "linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%)"
+            : "linear-gradient(135deg, #f0f4f8 0%, #e8f0f7 50%, #f5f6fa 100%)",
+      }}
+    >
       {/* App Bar */}
       <AppBar />
 
@@ -161,7 +171,11 @@ export default function BoardsList() {
           }}
         >
           <Box>
-            <Typography variant="h4" fontWeight="bold">
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              sx={{ color: theme.palette.primary.main }}
+            >
               Boards của tôi
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
@@ -174,11 +188,14 @@ export default function BoardsList() {
             size="large"
             onClick={() => setOpenCreateDialog(true)}
             sx={{
-              background: "linear-gradient(135deg, #2196F3 0%, #1976D2 100%)",
+              bgcolor: theme.palette.primary.main,
               borderRadius: "8px",
               textTransform: "none",
               fontSize: "1rem",
               px: 3,
+              "&:hover": {
+                bgcolor: theme.palette.primary.dark,
+              },
             }}
           >
             Tạo Board Mới
@@ -198,7 +215,8 @@ export default function BoardsList() {
             sx={{
               textAlign: "center",
               py: 8,
-              bgcolor: "white",
+              bgcolor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
               borderRadius: "8px",
             }}
           >
@@ -210,10 +228,13 @@ export default function BoardsList() {
               startIcon={<AddIcon />}
               onClick={() => setOpenCreateDialog(true)}
               sx={{
-                background: "linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)",
+                bgcolor: theme.palette.primary.main,
                 borderRadius: "8px",
                 textTransform: "none",
                 fontSize: "1rem",
+                "&:hover": {
+                  bgcolor: theme.palette.primary.dark,
+                },
               }}
             >
               Tạo Board Đầu Tiên
@@ -228,13 +249,17 @@ export default function BoardsList() {
                     height: "100%",
                     cursor: "pointer",
                     transition: "all 0.3s ease",
+                    bgcolor: theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`,
                     "&:hover": {
                       transform: "translateY(-8px)",
-                      boxShadow: "0 12px 20px rgba(0,0,0,0.1)",
+                      boxShadow: `0 12px 20px ${
+                        theme.palette.mode === "dark"
+                          ? "rgba(0,0,0,0.3)"
+                          : "rgba(0,0,0,0.1)"
+                      }`,
+                      borderColor: theme.palette.primary.main,
                     },
-                    background:
-                      "linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%)",
-                    border: "1px solid #90caf9",
                   }}
                   onClick={() => navigate(`/board/${board._id}`)}
                 >
@@ -242,7 +267,7 @@ export default function BoardsList() {
                     <Typography
                       variant="h6"
                       fontWeight="bold"
-                      sx={{ mb: 1, color: "#1976d2" }}
+                      sx={{ mb: 1, color: theme.palette.primary.main }}
                     >
                       {board.title}
                     </Typography>
@@ -254,7 +279,7 @@ export default function BoardsList() {
                       sx={{
                         display: "block",
                         mt: 2,
-                        color: "#666",
+                        color: theme.palette.text.secondary,
                       }}
                     >
                       {board.type === "public" ? "🔓 Công khai" : "🔒 Riêng tư"}
@@ -301,7 +326,8 @@ export default function BoardsList() {
         PaperProps={{
           sx: {
             borderRadius: "12px",
-            background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)",
+            bgcolor: theme.palette.background.paper,
+            backgroundImage: "none",
           },
         }}
       >
@@ -309,7 +335,7 @@ export default function BoardsList() {
           sx={{
             fontSize: "1.3rem",
             fontWeight: 600,
-            background: "linear-gradient(135deg, #2196F3 0%, #1976D2 100%)",
+            bgcolor: theme.palette.primary.main,
             color: "white",
             borderRadius: "12px 12px 0 0",
             display: "flex",
@@ -342,9 +368,9 @@ export default function BoardsList() {
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
                 transition: "all 0.3s ease",
-                "&:hover fieldset": { borderColor: "#2196F3" },
+                "&:hover fieldset": { borderColor: theme.palette.primary.main },
                 "&.Mui-focused fieldset": {
-                  borderColor: "#1976D2",
+                  borderColor: theme.palette.primary.main,
                   borderWidth: "2px",
                 },
               },
@@ -363,9 +389,9 @@ export default function BoardsList() {
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
                 transition: "all 0.3s ease",
-                "&:hover fieldset": { borderColor: "#2196F3" },
+                "&:hover fieldset": { borderColor: theme.palette.primary.main },
                 "&.Mui-focused fieldset": {
-                  borderColor: "#1976D2",
+                  borderColor: theme.palette.primary.main,
                   borderWidth: "2px",
                 },
               },
@@ -393,9 +419,9 @@ export default function BoardsList() {
               borderRadius: "8px",
               textTransform: "none",
               fontSize: "1rem",
-              background: "linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)",
+              bgcolor: theme.palette.primary.main,
               "&:hover": {
-                background: "linear-gradient(135deg, #66BB6A 0%, #43A047 100%)",
+                bgcolor: theme.palette.primary.dark,
               },
               transition: "all 0.3s ease",
             }}
