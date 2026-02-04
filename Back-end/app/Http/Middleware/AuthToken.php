@@ -26,11 +26,11 @@ class AuthToken
             return response()->json(['message' => 'Invalid token'], 401);
         }
 
-        // GẮN USER VÀO REQUEST
+        // ✅ GẮN USER VÀO REQUEST
         $request->attributes->set('auth_user', $userToken->user);
 
         // (optional)
-        // auth()->login($userToken->user);
+        auth()->login($userToken->user);
 
         return $next($request);
     }

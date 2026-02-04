@@ -1,19 +1,20 @@
-// src/main.jsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles';
-import theme from './theme';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { CssBaseline } from "@mui/material";
+import { CustomThemeProvider } from "~/contexts/ThemeContext";
+import { AuthProvider } from "~/contexts/AuthContext";
+import AppRoutes from "./routes/AppRoutes";
 
-import { AuthProvider } from './Contexts/AuthContext';
-import { RouterProvider } from 'react-router-dom';
-import router from './routes/Routers';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <CustomThemeProvider>
+      <CssBaseline />
+      <BrowserRouter>
         <AuthProvider>
-            <CssVarsProvider theme={theme}>
-                <RouterProvider router={router} />
-            </CssVarsProvider>
+          <AppRoutes />
         </AuthProvider>
-    </React.StrictMode>
+      </BrowserRouter>
+    </CustomThemeProvider>
+  </React.StrictMode>,
 );

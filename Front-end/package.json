@@ -16,15 +16,17 @@
     "@dnd-kit/core": "^6.0.8",
     "@dnd-kit/sortable": "^7.0.2",
     "@dnd-kit/utilities": "^3.2.1",
-    "@emotion/react": "^11.11.0",
+    "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.13.0",
+    "@mui/icons-material": "^5.14.0",
+    "@mui/material": "^5.14.0",
     "axios": "^1.13.2",
+    "laravel-echo": "^2.3.0",
     "lodash": "^4.17.21",
+    "pusher-js": "^8.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.30.3"
+    "react-router-dom": "^7.12.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",

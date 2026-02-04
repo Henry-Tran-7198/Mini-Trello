@@ -1,6 +1,12 @@
-// src/App.jsx
-import './App.css'; // nếu có
+import AppRoutes from "./routes/AppRoutes";
+import { CustomThemeProvider } from "./contexts/ThemeContext";
 
-export default function App() {
-    return null; // hoặc <div /> – không cần render gì ở đây nữa
+function App() {
+  return (
+    <CustomThemeProvider>
+      <AppRoutes />
+    </CustomThemeProvider>
+  );
 }
+
+export default App;

@@ -1,62 +1,49 @@
-// src/contexts/AuthContext.jsx   ← file này sửa thành như dưới
-
-import { createContext, useState, useEffect } from 'react';
-import { getToken, removeToken } from '../api/authService';
-import { CircularProgress } from '@mui/material';
-
-// Giả sử bạn đã có hàm này trong authService
-import { authService } from '../api/authService';
+import { createContext, useState, useEffect } from "react";
+import axiosInstance from "~/api/axios";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);     // ← THÊM DÒNG NÀY
+  const [user, setUser] = useState(null);
 
-    // Load user từ token khi app mở (chạy 1 lần duy nhất)
-    useEffect(() => {
-        const token = getToken();
-        if (token) {
-            // Gọi API lấy thông tin user (phải có hàm này trong authService)
-            authService.getCurrentUser() // ← hàm này bạn cần viết nếu chưa có
-                .then((userData) => {
-                    setUser(userData);
-                })
-                .catch((err) => {
-                    console.error("Token invalid or expired", err);
-                    removeToken();
-                    setUser(null);
-                })
-                .finally(() => {
-                    setLoading(false);            // ← quan trọng: báo đã load xong
-                });
-        } else {
-            setLoading(false);                    // không có token → xong luôn
-        }
-    }, []);
-
-    const logout = () => {
-        removeToken();
-        setUser(null);
-    };
-
-    // Nếu đang load user → hiển thị spinner (tránh flash màn hình login)
-    if (loading) {
-        return (
-            <div style={{
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-            }}>
-                <CircularProgress />
-            </div>
-        );
+  useEffect(() => {
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
+    if (token) {
+      axiosInstance
+        .get("/me")
+        .then((res) => setUser(res.data))
+        .catch(() => logout());
     }
+  }, []);
 
-    return (
-        <AuthContext.Provider value={{ user, setUser, logout, loading }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  const login = async (login, password) => {
+    try {
+      const res = await axiosInstance.post("/login", { login, password });
+      localStorage.setItem("token", res.data.token);
+      setUser(res.data.user);
+
+      // Fetch fresh user data to ensure avatar loaded
+      setTimeout(() => {
+        axiosInstance
+          .get("/me")
+          .then((res) => setUser(res.data))
+          .catch(() => {});
+      }, 100);
+    } catch (error) {
+      console.error("Login error:", error.response?.data || error.message);
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }

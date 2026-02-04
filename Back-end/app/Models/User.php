@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Traits\HasCustomTokens;
 
 class User extends Authenticatable
 {
+    use HasCustomTokens;
+
     protected $fillable = [
         'email',
         'username',
@@ -13,6 +16,7 @@ class User extends Authenticatable
         'avatar',
         'role',
         'isActive',
+        'notification_preferences',
     ];
 
     public $timestamps = true;

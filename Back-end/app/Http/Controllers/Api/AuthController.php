@@ -9,8 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\ProfileRequest;
-use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -60,12 +58,19 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account inactive'], 403);
         }
 
-        $token = hash('sha256', Str::random(60));
+        // Only allow 1 active session per user
+        // Delete all existing tokens when user logs in again
+        $maxTokens = 1;
+        $tokenCount = $user->tokens()->count();
 
-        UserToken::create([
-            'user_id' => $user->id,
-            'token'   => $token
-        ]);
+        if ($tokenCount >= $maxTokens) {
+            // Delete all existing tokens to allow only 1 session
+            $user->tokens()->delete();
+        }
+
+        // Dùng custom method từ HasCustomTokens trait
+        $tokenResponse = $user->createToken('login-token');
+        $token = $tokenResponse->plainTextToken;
 
         return response()->json([
             'token' => $token,
@@ -73,7 +78,7 @@ class AuthController extends Controller
                 'id'       => $user->id,
                 'email'    => $user->email,
                 'username' => $user->username,
-                'avatar' => $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.png'),
+                'avatar'   => $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.png')
             ]
         ]);
     }
@@ -91,8 +96,24 @@ class AuthController extends Controller
         ]);
     }
 
-    
-    //UPLOAD AVATAR (login required)
+    // GET CURRENT USER
+    public function me(Request $request)
+    {
+        $user = $request->attributes->get('auth_user');
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        return response()->json([
+            'id'       => $user->id,
+            'email'    => $user->email,
+            'username' => $user->username,
+            'avatar'   => $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default.png')
+        ]);
+    }
+
+    // UPLOAD AVATAR (login required)
     public function uploadAvatar(Request $request)
     {
         $request->validate([
@@ -104,7 +125,7 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-        
+
         // xoá avatar cũ (trừ default)
         if ($user->avatar && $user->avatar !== 'avatars/default.png') {
             Storage::disk('public')->delete($user->avatar);
@@ -119,93 +140,5 @@ class AuthController extends Controller
             'message'    => 'Avatar updated',
             'avatar_url' => asset('storage/' . $path),
         ]);
-    }
-
-    // GET CURRENT USER
-    public function getCurrentUser(Request $request)
-    {
-        $user = $request->attributes->get('auth_user');
-
-        if(!$user){
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Get User successfully!!!',
-            'data' => [
-                'id' => $user->id,
-                'email' => $user->email,
-                'username' => $user->username,
-                'password' => $user->password,
-                'avatar' => $user->avatar ? 
-                asset('storage/' . $user->avatar) : 
-                asset('storage/avatars/default.png'),
-            ]
-        ]);
-    }
-
-    // UPDATE PROFILE
-    public function updateProfile(Request $request)
-    {
-        $user = $request->attributes->get('auth_user');
-
-        if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        try {
-            $validated = $request->validate([
-                'email'    => ['nullable', 'email', 'unique:users,email,' . $user->id],
-                'username' => ['nullable', 'min:3', 'unique:users,username,' . $user->id],
-                'password' => ['nullable', 'min:6', 'confirmed'],
-                'avatar'   => ['nullable', 'image', 'max:2048'],
-            ]);
-
-            // Only fill validated fields (safe & clean)
-            $user->fill($validated);
-            Log::info('Validated data:', $validated);
-
-            // Handle file separately (not in validation array)
-            if ($request->hasFile('avatar')) {
-                if ($user->avatar && $user->avatar !== 'avatar/default.png') {
-                    Storage::disk('public')->delete($user->avatar);
-                }
-                $path = $request->file('avatar')->store('avatars', 'public');
-                $user->avatar = $path;
-            }
-
-            $user->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Update successfully!!!',
-                'data' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                    'username' => $user->username,
-                    'avatar' => asset('storage/' . $user->avatar)
-                ]
-            ], 200);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid Data',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('Update Profile failed', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'request' => $request->all(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Update failed: ' . $e->getMessage(),
-            ], 500);
-        }
     }
 }

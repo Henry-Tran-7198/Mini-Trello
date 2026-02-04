@@ -1,130 +1,103 @@
-import React, { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Divider from '@mui/material/Divider';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Avatar from '@mui/material/Avatar';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import PersonAdd from '@mui/icons-material/PersonAdd';
-import Settings from '@mui/icons-material/Settings';
-import Logout from '@mui/icons-material/Logout';
-import LogoutButton from '../../AuthForm/LogoutButton';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../../../api/authService';
-
+import { useState, useContext } from "react";
+import Box from "@mui/material/Box";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Divider from "@mui/material/Divider";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Avatar from "@mui/material/Avatar";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import PersonAdd from "@mui/icons-material/PersonAdd";
+import Settings from "@mui/icons-material/Settings";
+import Logout from "@mui/icons-material/Logout";
+import { AuthContext } from "~/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function Profiles() {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [avatarPreview, setAvatarPreview] = useState(null);
-    const [loadingAvatar, setLoadingAvatar] = useState(true);
-    const [error, setError] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
-    const navigate = useNavigate();
-    const open = Boolean(anchorEl);
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+  const getAvatarUrl = () => {
+    if (!user?.avatar) return "";
+    // Nếu user.avatar đã là URL đầy đủ, trả về trực tiếp
+    if (user.avatar.startsWith("http")) return user.avatar;
+    // Nếu là path tương đối, thêm domain
+    return `http://localhost:8000${user.avatar}`;
+  };
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-    // Fetch current user avatar when component mounts
-    useEffect(() => {
-        const fetchUserAvatar = async () => {
-            try {
-                const response = await authService.getCurrentUser();
-                console.log("Full API response:", response);
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-                // Try different common paths to find avatar
-                const avatarPath =
-                    response?.data?.avatar ||
-                    response?.data?.data?.avatar ||
-                    response?.avatar;
+  const handleSettings = () => {
+    navigate("/settings");
+    handleClose();
+  };
 
-                if (avatarPath) {
-                    // If backend returns only path (e.g. "avatars/xxx.jpg"), add base URL
-                    const fullUrl = avatarPath.startsWith('http')
-                        ? avatarPath
-                        : `http://localhost:8000/storage/${avatarPath}`;
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
-                    console.log("Avatar full URL:", fullUrl);
-                    setAvatarPreview(fullUrl);
-                } else {
-                    console.warn("No avatar found in API response");
-                }
-            } catch (err) {
-                console.error("Failed to load avatar:", err);
-                setError('Failed to load avatar');
-            } finally {
-                setLoadingAvatar(false);
-            }
-        };
+  return (
+    <Box>
+      <Tooltip title="Account settings">
+        <IconButton
+          onClick={handleClick}
+          size="small"
+          sx={{ padding: 0 }}
+          aria-controls={open ? "basic-menu-profiles" : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? "true" : undefined}
+        >
+          <Avatar
+            sx={{ width: 34, height: 34 }}
+            alt={user?.username || "Avatar"}
+            src={getAvatarUrl()}
+          />
+        </IconButton>
+      </Tooltip>
 
-        fetchUserAvatar();
-    }, []);
+      <Menu
+        id="basic-menu-profiles"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+      >
+        <MenuItem>
+          <Avatar
+            sx={{ width: 34, height: 34, mr: 1 }}
+            alt={user?.username || "Avatar"}
+            src={getAvatarUrl()}
+          />
+          <span>{user?.username || user?.email}</span>
+        </MenuItem>
 
-    return (
-        <Box>
-            <Tooltip title="Account settings">
-                <IconButton
-                    onClick={handleClick}
-                    size="small"
-                    sx={{ padding: 0 }}
-                    aria-controls={open ? 'basic-menu-profiles' : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={open ? 'true' : undefined}
-                >
-                    {(
-                        <Avatar
-                            sx={{ width: 34, height: 34 }}
-                            alt="User Avatar"
-                            src={avatarPreview || '/avatar/default.png'}
-                        />
-                    )}
-                </IconButton>
-            </Tooltip>
+        <Divider />
 
-            <Menu
-                id="basic-menu-profiles"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                    'aria-labelledby': 'basic-button-profiles',
-                }}
-            >
-                <MenuItem onClick={() => navigate('/profile')}>
-                    <Avatar sx={{ width: 28, height: 28, mr: 2 }} /> Profile
-                </MenuItem>
-                <MenuItem onClick={handleClose}>
-                    <Avatar sx={{ width: 28, height: 28, mr: 2 }} /> My account
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={handleClose}>
-                    <ListItemIcon>
-                        <PersonAdd fontSize="small" />
-                    </ListItemIcon>
-                    Add another account
-                </MenuItem>
-                <MenuItem onClick={handleClose}>
-                    <ListItemIcon>
-                        <Settings fontSize="small" />
-                    </ListItemIcon>
-                    Settings
-                </MenuItem>
-                <MenuItem onClick={handleClose}>
-                    <ListItemIcon>
-                        <Logout fontSize="small" />
-                    </ListItemIcon>
-                    <LogoutButton />
-                </MenuItem>
-            </Menu>
-        </Box>
-    );
+        <MenuItem onClick={handleSettings}>
+          <ListItemIcon>
+            <Settings fontSize="small" />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
+    </Box>
+  );
 }
 
 export default Profiles;
