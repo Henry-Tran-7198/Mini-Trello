@@ -155,7 +155,6 @@ class AuthController extends Controller
         }
 
         try {
-            Log::info('Request data received:', $request->all());
             $validated = $request->validate([
                 'email'    => ['nullable', 'email', 'unique:users,email,' . $user->id],
                 'username' => ['nullable', 'min:3', 'unique:users,username,' . $user->id],
@@ -175,12 +174,8 @@ class AuthController extends Controller
                 $path = $request->file('avatar')->store('avatars', 'public');
                 $user->avatar = $path;
             }
-            Log::info('User before save:', $user->toArray());
-            Log::info('All request:', $request->all());
-            Log::info('Files:', $request->file());
 
             $user->save();
-            Log::info('User after save:', $user->toArray());
 
             return response()->json([
                 'success' => true,
@@ -196,7 +191,7 @@ class AuthController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Dữ liệu không hợp lệ',
+                'message' => 'Invalid Data',
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
